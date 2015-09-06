@@ -20,14 +20,14 @@ public class Boll {
     private static int mProgram;
     private static int mPositionHandle;
     private static int mColorHandle;
-    private static int mMVPMatrix;
+    private static int mMVPMatrixHandle;
 
     public Boll(OpenGLSurfaceView openGLSurfaceView, int radius) {
         if (radius <= 0) {
             throw new IllegalArgumentException("传入的半径不大于0");
         }
         initVertexData(radius);
-        initSharder(openGLSurfaceView);
+        initShader(openGLSurfaceView);
     }
 
     private void initVertexData(int radius) {
@@ -117,14 +117,14 @@ public class Boll {
             colorArr[offset + 3] = 1f;
         }
 
-        ByteBuffer colorByteBuffer = ByteBuffer.allocateDirect(mVertexCount);
+        ByteBuffer colorByteBuffer = ByteBuffer.allocateDirect(colorArr.length * 4);
         colorByteBuffer.order(ByteOrder.nativeOrder());
         mColorFloatBuffer = colorByteBuffer.asFloatBuffer();
         mColorFloatBuffer.put(colorArr);
         mColorFloatBuffer.position(0);
     }
 
-    private void initSharder(OpenGLSurfaceView openGLSurfaceView) {
+    private void initShader(OpenGLSurfaceView openGLSurfaceView) {
         String vertexShaderSource = ShaderUtil.readSourceFromAssetsFile("vertex.sh", openGLSurfaceView.getResources());
         if (vertexShaderSource == null) {
             throw new NullPointerException("读取顶点着色器源码失败");
@@ -143,11 +143,20 @@ public class Boll {
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
-        mMVPMatrix = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMVPMatrix");
     }
 
     public void drawSelf() {
         GLES20.glUseProgram(mProgram);
+
+        GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, MatrixState.getFinalMatrixArray(), 0);
+        GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mVertexFloatBuffer);
+        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 4 * 4, mColorFloatBuffer);
+
+        GLES20.glEnableVertexAttribArray(mPositionHandle);
+        GLES20.glEnableVertexAttribArray(mColorHandle);
+
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount);
     }
 
 }

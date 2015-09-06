@@ -44,7 +44,7 @@ public class ShaderUtil {
             int[] result = new int[1];
             GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, result, 0);
             if (result[0] == 0) {
-                Log.w(TAG, "¼ÓÔØShaderÊ§°Ü shaderTyp=" + shaderType);
+                Log.w(TAG, "åŠ è½½Shaderå¤±è´¥ shaderTyp=" + shaderType);
                 Log.w(TAG, GLES20.glGetShaderInfoLog(shader));
                 GLES20.glDeleteShader(shader);
                 shader = 0;
@@ -56,22 +56,24 @@ public class ShaderUtil {
     private static void checkGLError(String op) {
         int error;
         while ((error = GLES20.glGetError()) != GLES20.GL_NO_ERROR) {
-            // Log.w(TAG, "²Ù×÷£º" + op + ",´íÎó£º" + error);
-            throw new IllegalStateException("²Ù×÷£º" + op + "´íÎó,´íÎóÎª£º" + error);
+            // Log.w(TAG, "æ“ä½œï¼š" + op + ",é”™è¯¯ï¼š" + error);
+            throw new IllegalStateException("æ“ä½œï¼š" + op + "é”™è¯¯,é”™è¯¯ä¸ºï¼š" + error);
         }
     }
 
     public static int createProgram(String vertexShaderSource, String fragmentShaderSource) {
         if (TextUtils.isEmpty(vertexShaderSource) || TextUtils.isEmpty(fragmentShaderSource)) {
-            throw new IllegalArgumentException("´«ÈëµÄ¶¥µã×ÅÉ«Æ÷Ô´ÂëÎª¿Õ»òÕß´«ÈëµÄÆ¬Ôª×ÅÉ«Æ÷Ô´ÂëÎª¿Õ");
+            throw new IllegalArgumentException("ä¼ å…¥çš„é¡¶ç‚¹ç€è‰²å™¨æºç ä¸ºç©ºæˆ–è€…ä¼ å…¥çš„ç‰‡å…ƒç€è‰²å™¨æºç ä¸ºç©º");
         }
 
         int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderSource);
+        Log.i(TAG, "vertexShader=" + vertexShader);
         if (vertexShader == 0) {
             return 0;
         }
 
         int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderSource);
+        Log.i(TAG, "fragmentShader=" + fragmentShader);
         if (fragmentShader == 0) {
             return 0;
         }
@@ -80,20 +82,19 @@ public class ShaderUtil {
         if (program != 0) {
             GLES20.glAttachShader(program, vertexShader);
             checkGLError("AttachVertexShader");
-            GLES20.glAttachShader(program, vertexShader);
+            GLES20.glAttachShader(program, fragmentShader);
             checkGLError("AttachFragmentShader");
 
             GLES20.glLinkProgram(program);
             int[] result = new int[1];
             GLES20.glGetProgramiv(program, GLES20.GL_LINK_STATUS, result, 0);
             if (result[0] == 0) {
-                Log.w(TAG, "¼ÓÔØ³ÌĞòÊ§°Ü");
+                Log.w(TAG, "åŠ è½½ç¨‹åºå¤±è´¥");
                 Log.w(TAG, GLES20.glGetProgramInfoLog(program));
                 GLES20.glDeleteProgram(program);
                 program = 0;
             }
         }
-
         return program;
     }
 

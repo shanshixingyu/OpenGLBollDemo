@@ -1,4 +1,4 @@
-uniform mat4 uMVPMatrix;
+uniform mat4 mMVPMatrix;
 attribute vec3 aPosition;
 attribute vec4 aColor;
 varying vec4 aaColor;
