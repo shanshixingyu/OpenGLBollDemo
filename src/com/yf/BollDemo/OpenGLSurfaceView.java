@@ -1,9 +1,12 @@
 package com.yf.BollDemo;
 
 import android.content.Context;
+import android.graphics.Point;
+import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
@@ -13,6 +16,7 @@ import javax.microedition.khronos.opengles.GL10;
  */
 public class OpenGLSurfaceView extends GLSurfaceView {
 
+    private static final float SCALE = 180.0f / 360.0f;
     private OpenGLRender mRender;
 
     public OpenGLSurfaceView(Context context) {
@@ -29,6 +33,22 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         requestFocus();
         setFocusableInTouchMode(true);
         setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+    }
+
+    private PointF mPrePoint = new PointF(0, 0);
+    private PointF mCurrentPoint = new PointF(0, 0);
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        mCurrentPoint.x = event.getX();
+        mCurrentPoint.x = event.getY();
+        if (event.getAction() == MotionEvent.ACTION_MOVE) {
+            MatrixState.rotate(SCALE * (mCurrentPoint.x - mPrePoint.x), 0, 1, 0);// 绕y轴旋转
+            MatrixState.rotate(SCALE * (mCurrentPoint.y - mPrePoint.y), 1, 0, 0);// 绕x轴旋转
+        }
+        mPrePoint.x = mCurrentPoint.x;
+        mPrePoint.y = mCurrentPoint.y;
+        return true;
     }
 
     private class OpenGLRender implements OpenGLSurfaceView.Renderer {
@@ -66,6 +86,5 @@ public class OpenGLSurfaceView extends GLSurfaceView {
             MatrixState.restoreCurrentMatrixArray();
         }
     }
-
 
 }
