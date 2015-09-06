@@ -40,7 +40,7 @@ public class Boll {
         float[] currentVertexArray = new float[6];// 暂存当前所在经度的两个顶点的坐标，较少计算量
         float[] nextVertexArray = new float[6];// 暂存下一个经度的两个顶点的坐标
 
-        for (int wAngle = -90; wAngle < 90; wAngle += PER_ANGLE) {// 纬度
+        for (int wAngle = -90; wAngle <= 90; wAngle += PER_ANGLE) {// 纬度
             wPreRadius = wNewRadius;
             wNewRadius = (float) (radius * Math.cos(Math.toRadians(wAngle)));
             wPreY = wNewY;
