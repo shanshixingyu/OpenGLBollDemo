@@ -1,5 +1,10 @@
 package com.yf.BollDemo;
 
+import android.opengl.GLES20;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,6 +14,13 @@ import java.util.List;
 public class Boll {
 
     private static final int PER_ANGLE = 10;
+    private static int mVertexCount;
+    private static FloatBuffer mVertexFloatBuffer;
+    private static FloatBuffer mColorFloatBuffer;
+    private static int mProgram;
+    private static int mPositionHandle;
+    private static int mColorHandle;
+    private static int mMVPMatrix;
 
     public Boll(OpenGLSurfaceView openGLSurfaceView, int radius) {
         if (radius <= 0) {
@@ -18,7 +30,6 @@ public class Boll {
         initSharder(openGLSurfaceView);
     }
 
-
     private void initVertexData(int radius) {
         List<Float> vertexArray = new ArrayList<Float>();
 
@@ -26,8 +37,8 @@ public class Boll {
         float wPreRadius = 0;
         float wNewY = -radius;
         float wPreY = -radius;
-        float[] currentVertexArray = new float[6];//暂存当前所在经度的两个顶点的坐标，较少计算量
-        float[] nextVertexArray = new float[6];//暂存下一个经度的两个顶点的坐标
+        float[] currentVertexArray = new float[6];// 暂存当前所在经度的两个顶点的坐标，较少计算量
+        float[] nextVertexArray = new float[6];// 暂存下一个经度的两个顶点的坐标
 
         for (int wAngle = -90; wAngle < 90; wAngle += PER_ANGLE) {// 纬度
             wPreRadius = wNewRadius;
@@ -35,8 +46,8 @@ public class Boll {
             wPreY = wNewY;
             wNewY = (float) (radius * Math.sin(Math.toRadians(wAngle)));
 
-            for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {//经度
-                //每次计算下一个的经度下的两个点的位置
+            for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {// 经度
+                // 每次计算下一个的经度下的两个点的位置
                 if (jAngle == 0) {
                     currentVertexArray[0] = (float) (wNewRadius * Math.cos(Math.toRadians(jAngle)));
                     currentVertexArray[1] = wNewY;
@@ -54,7 +65,6 @@ public class Boll {
                 nextVertexArray[3] = (float) (wPreRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
                 nextVertexArray[4] = wPreY;
                 nextVertexArray[5] = (float) (wPreRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
-
 
                 // 第一个三角形
                 for (int i = 0; i < 6; i++) {
@@ -77,7 +87,6 @@ public class Boll {
                 vertexArray.add(currentVertexArray[1]);
                 vertexArray.add(currentVertexArray[2]);
 
-
                 // 将下一个经度上的两个点加入到当前
                 for (int i = 0; i < 6; i++) {
                     currentVertexArray[i] = nextVertexArray[i];
@@ -85,16 +94,60 @@ public class Boll {
             }
         }
 
+        float[] vertexArr = new float[vertexArray.size()];
+        for (int i = 0; i < vertexArray.size(); i++) {
+            vertexArr[i] = vertexArray.get(i);
+        }
+
+        mVertexCount = vertexArray.size() / 3;
+
+        ByteBuffer vertexByteBuffer = ByteBuffer.allocateDirect(vertexArray.size() * 4);
+        vertexByteBuffer.order(ByteOrder.nativeOrder());
+        mVertexFloatBuffer = vertexByteBuffer.asFloatBuffer();
+        mVertexFloatBuffer.put(vertexArr);
+        mVertexFloatBuffer.position(0);
+
+        float[] colorArr = new float[mVertexCount * 4];
+        int offset;
+        for (int i = 0; i < mVertexCount; i++) {
+            offset = 4 * i;
+            colorArr[offset] = 1f;
+            colorArr[offset + 1] = 0.5f;
+            colorArr[offset + 2] = 0.5f;
+            colorArr[offset + 3] = 1f;
+        }
+
+        ByteBuffer colorByteBuffer = ByteBuffer.allocateDirect(mVertexCount);
+        colorByteBuffer.order(ByteOrder.nativeOrder());
+        mColorFloatBuffer = colorByteBuffer.asFloatBuffer();
+        mColorFloatBuffer.put(colorArr);
+        mColorFloatBuffer.position(0);
     }
 
     private void initSharder(OpenGLSurfaceView openGLSurfaceView) {
+        String vertexShaderSource = ShaderUtil.readSourceFromAssetsFile("vertex.sh", openGLSurfaceView.getResources());
+        if (vertexShaderSource == null) {
+            throw new NullPointerException("读取顶点着色器源码失败");
+        }
 
+        String fragmentShaderSource =
+            ShaderUtil.readSourceFromAssetsFile("fragment.sh", openGLSurfaceView.getResources());
+        if (fragmentShaderSource == null) {
+            throw new NullPointerException("读取片元着色器源码失败");
+        }
+
+        mProgram = ShaderUtil.createProgram(vertexShaderSource, fragmentShaderSource);
+        if (mProgram == 0) {
+            throw new IllegalStateException("创建着色器程序失败");
+        }
+
+        mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
+        mColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
+        mMVPMatrix = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
     }
-
 
     public void drawSelf() {
-
+        GLES20.glUseProgram(mProgram);
     }
-
 
 }
