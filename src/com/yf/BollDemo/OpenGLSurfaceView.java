@@ -1,7 +1,6 @@
 package com.yf.BollDemo;
 
 import android.content.Context;
-import android.graphics.Point;
 import android.graphics.PointF;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
@@ -18,6 +17,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
 
     private static final float SCALE = 180.0f / 360.0f;
     private OpenGLRender mRender;
+    private Boll mBoll;
 
     public OpenGLSurfaceView(Context context) {
         this(context, null);
@@ -41,10 +41,14 @@ public class OpenGLSurfaceView extends GLSurfaceView {
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         mCurrentPoint.x = event.getX();
-        mCurrentPoint.x = event.getY();
+        mCurrentPoint.y = event.getY();
         if (event.getAction() == MotionEvent.ACTION_MOVE) {
-            MatrixState.rotate(SCALE * (mCurrentPoint.x - mPrePoint.x), 0, 1, 0);// 绕y轴旋转
-            MatrixState.rotate(SCALE * (mCurrentPoint.y - mPrePoint.y), 1, 0, 0);// 绕x轴旋转
+            mBoll.setxAngle(SCALE * (mCurrentPoint.y - mPrePoint.y));
+            mBoll.setyAngle(SCALE * (mCurrentPoint.x - mPrePoint.x));
+            // mBoll.setxAngle(mBoll.getxAngle() + SCALE * (mCurrentPoint.y - mPrePoint.y));
+            // mBoll.setyAngle(mBoll.getyAngle() + SCALE * (mCurrentPoint.x - mPrePoint.x));
+            MatrixState.rotate(mBoll.getyAngle(), 0, 1, 0);// 绕y轴旋转
+            MatrixState.rotate(mBoll.getxAngle(), 1, 0, 0);// 绕x轴旋转
         }
         mPrePoint.x = mCurrentPoint.x;
         mPrePoint.y = mCurrentPoint.y;
@@ -53,13 +57,11 @@ public class OpenGLSurfaceView extends GLSurfaceView {
 
     private class OpenGLRender implements OpenGLSurfaceView.Renderer {
 
-        private Boll mBoll;
-
         @Override
         public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
             GLES20.glClearColor(0, 0, 0, 0);
 
-            mBoll = new Boll(OpenGLSurfaceView.this, 1);
+            mBoll = new Boll(OpenGLSurfaceView.this, 2f);
 
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
             GLES20.glEnable(GLES20.GL_CULL_FACE);
@@ -69,7 +71,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         public void onSurfaceChanged(GL10 gl10, int width, int height) {
             GLES20.glViewport(0, 0, width, height);
             float ratio = (float) width / height;
-            MatrixState.setProjectFrustum(-ratio, ratio, -1, 1, 1, 10);
+            MatrixState.setProjectFrustum(-ratio, ratio, -1, 1,1, 10);
 
             MatrixState.initMatrixArray();
             MatrixState.setCamera(0, 0, 5, 0, 0, 0, 0, 1, 0);

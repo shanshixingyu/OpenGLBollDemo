@@ -1,7 +1,6 @@
 package com.yf.BollDemo;
 
 import android.opengl.GLES20;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
@@ -12,39 +11,43 @@ import java.util.List;
  * Created by Administrator on 9/5 0005.
  */
 public class Boll {
+    private static final String TAG = Boll.class.getName();
 
     private static final int PER_ANGLE = 10;
-    private static int mVertexCount;
-    private static FloatBuffer mVertexFloatBuffer;
-    private static FloatBuffer mColorFloatBuffer;
-    private static int mProgram;
-    private static int mPositionHandle;
-    private static int mColorHandle;
-    private static int mMVPMatrixHandle;
+    private int mVertexCount;
+    private FloatBuffer mVertexFloatBuffer;
+    private int mProgram;
+    private int mPositionHandle;
+    private int mMVPMatrixHandle;
+    private int mRadiusHandle;
+    private float mRadius;
+    private float xAngle;
+    private float yAngle;
 
-    public Boll(OpenGLSurfaceView openGLSurfaceView, int radius) {
+    public Boll(OpenGLSurfaceView openGLSurfaceView, float radius) {
         if (radius <= 0) {
             throw new IllegalArgumentException("传入的半径不大于0");
         }
-        initVertexData(radius);
+        this.mRadius = radius;
+        initVertexData();
         initShader(openGLSurfaceView);
     }
 
-    private void initVertexData(int radius) {
+    private void initVertexData() {
         List<Float> vertexArray = new ArrayList<Float>();
 
         float wNewRadius = 0;
         float wPreRadius = 0;
-        float wNewY = -radius;
-        float wPreY = -radius;
+        float wNewY = -this.mRadius;
+        float wPreY = -this.mRadius;
         float[] currentVertexArray = new float[6];// 暂存当前所在经度的两个顶点的坐标，较少计算量
         float[] nextVertexArray = new float[6];// 暂存下一个经度的两个顶点的坐标
 
         for (int wAngle = -90; wAngle <= 90; wAngle += PER_ANGLE) {// 纬度
             wPreRadius = wNewRadius;
-            wNewRadius = (float) (radius * Math.cos(Math.toRadians(wAngle)));
+            wNewRadius = (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)));
             wPreY = wNewY;
-            wNewY = (float) (radius * Math.sin(Math.toRadians(wAngle)));
+            wNewY = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
 
             for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {// 经度
                 // 每次计算下一个的经度下的两个点的位置
@@ -93,6 +96,59 @@ public class Boll {
                 }
             }
         }
+        // for (int wAngle = -90; wAngle <= 90; wAngle += PER_ANGLE) {// 纬度
+        // for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {// 经度
+        // float x0 = (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.cos(Math.toRadians(jAngle)));
+        // float y0 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
+        // float z0 = (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.sin(Math.toRadians(jAngle)));
+        //
+        // float x1 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.cos(Math.toRadians(jAngle
+        // + PER_ANGLE)));
+        // float y1 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
+        // float z1 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.sin(Math.toRadians(jAngle
+        // + PER_ANGLE)));
+        //
+        // float x2 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.cos(Math.toRadians(jAngle
+        // + PER_ANGLE)));
+        // float y2 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle + PER_ANGLE)));
+        // float z2 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.sin(Math.toRadians(jAngle
+        // + PER_ANGLE)));
+        //
+        // float x3 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.cos(Math.toRadians(jAngle)));
+        // float y3 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle + PER_ANGLE)));
+        // float z3 =
+        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.sin(Math.toRadians(jAngle)));
+        //
+        // vertexArray.add(x0);
+        // vertexArray.add(y0);
+        // vertexArray.add(z0);
+        //
+        // vertexArray.add(x1);
+        // vertexArray.add(y1);
+        // vertexArray.add(z1);
+        //
+        // vertexArray.add(x3);
+        // vertexArray.add(y3);
+        // vertexArray.add(z3);
+        //
+        // vertexArray.add(x1);
+        // vertexArray.add(y1);
+        // vertexArray.add(z1);
+        //
+        // vertexArray.add(x2);
+        // vertexArray.add(y2);
+        // vertexArray.add(z2);
+        //
+        // vertexArray.add(x3);
+        // vertexArray.add(y3);
+        // vertexArray.add(z3);
+        // }
+        // }
 
         float[] vertexArr = new float[vertexArray.size()];
         for (int i = 0; i < vertexArray.size(); i++) {
@@ -107,31 +163,16 @@ public class Boll {
         mVertexFloatBuffer.put(vertexArr);
         mVertexFloatBuffer.position(0);
 
-        float[] colorArr = new float[mVertexCount * 4];
-        int offset;
-        for (int i = 0; i < mVertexCount; i++) {
-            offset = 4 * i;
-            colorArr[offset] = 1f;
-            colorArr[offset + 1] = 0.5f;
-            colorArr[offset + 2] = 0.5f;
-            colorArr[offset + 3] = 1f;
-        }
-
-        ByteBuffer colorByteBuffer = ByteBuffer.allocateDirect(colorArr.length * 4);
-        colorByteBuffer.order(ByteOrder.nativeOrder());
-        mColorFloatBuffer = colorByteBuffer.asFloatBuffer();
-        mColorFloatBuffer.put(colorArr);
-        mColorFloatBuffer.position(0);
     }
 
     private void initShader(OpenGLSurfaceView openGLSurfaceView) {
-        String vertexShaderSource = ShaderUtil.readSourceFromAssetsFile("vertex.sh", openGLSurfaceView.getResources());
+        String vertexShaderSource = ShaderUtil.readSourceFromAssetsFile("vertex.c", openGLSurfaceView.getResources());
         if (vertexShaderSource == null) {
             throw new NullPointerException("读取顶点着色器源码失败");
         }
 
         String fragmentShaderSource =
-            ShaderUtil.readSourceFromAssetsFile("fragment.sh", openGLSurfaceView.getResources());
+            ShaderUtil.readSourceFromAssetsFile("fragment.c", openGLSurfaceView.getResources());
         if (fragmentShaderSource == null) {
             throw new NullPointerException("读取片元着色器源码失败");
         }
@@ -142,21 +183,35 @@ public class Boll {
         }
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mColorHandle = GLES20.glGetAttribLocation(mProgram, "aColor");
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMVPMatrix");
+        mRadiusHandle = GLES20.glGetUniformLocation(mProgram, "uRadius");
     }
 
     public void drawSelf() {
         GLES20.glUseProgram(mProgram);
 
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, MatrixState.getFinalMatrixArray(), 0);
+        GLES20.glUniform1f(mRadiusHandle, this.mRadius);
         GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mVertexFloatBuffer);
-        GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 4 * 4, mColorFloatBuffer);
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
-        GLES20.glEnableVertexAttribArray(mColorHandle);
 
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, mVertexCount);
     }
 
+    public float getxAngle() {
+        return xAngle;
+    }
+
+    public void setxAngle(float xAngle) {
+        this.xAngle = xAngle;
+    }
+
+    public float getyAngle() {
+        return yAngle;
+    }
+
+    public void setyAngle(float yAngle) {
+        this.yAngle = yAngle;
+    }
 }
