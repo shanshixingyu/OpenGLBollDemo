@@ -45,8 +45,6 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         if (event.getAction() == MotionEvent.ACTION_MOVE) {
             mBoll.setxAngle(SCALE * (mCurrentPoint.y - mPrePoint.y));
             mBoll.setyAngle(SCALE * (mCurrentPoint.x - mPrePoint.x));
-            // mBoll.setxAngle(mBoll.getxAngle() + SCALE * (mCurrentPoint.y - mPrePoint.y));
-            // mBoll.setyAngle(mBoll.getyAngle() + SCALE * (mCurrentPoint.x - mPrePoint.x));
             MatrixState.rotate(mBoll.getyAngle(), 0, 1, 0);// 绕y轴旋转
             MatrixState.rotate(mBoll.getxAngle(), 1, 0, 0);// 绕x轴旋转
         }
@@ -71,7 +69,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         public void onSurfaceChanged(GL10 gl10, int width, int height) {
             GLES20.glViewport(0, 0, width, height);
             float ratio = (float) width / height;
-            MatrixState.setProjectFrustum(-ratio, ratio, -1, 1,1, 10);
+            MatrixState.setProjectFrustum(-ratio, ratio, -1, 1, 1, 10);
 
             MatrixState.initMatrixArray();
             MatrixState.setCamera(0, 0, 5, 0, 0, 0, 0, 1, 0);

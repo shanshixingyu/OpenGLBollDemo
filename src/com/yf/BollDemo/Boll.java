@@ -42,6 +42,7 @@ public class Boll {
         float wPreY = -this.mRadius;
         float[] currentVertexArray = new float[6];// 暂存当前所在经度的两个顶点的坐标，较少计算量
         float[] nextVertexArray = new float[6];// 暂存下一个经度的两个顶点的坐标
+        float[] wrapTemp = null;
 
         for (int wAngle = -90; wAngle <= 90; wAngle += PER_ANGLE) {// 纬度
             wPreRadius = wNewRadius;
@@ -50,105 +51,97 @@ public class Boll {
             wNewY = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
 
             for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {// 经度
+                // // 每次计算下一个的经度下的两个点的位置
+                // if (jAngle == 0) {
+                // currentVertexArray[0] = (float) (wNewRadius * Math.cos(Math.toRadians(0)));
+                // currentVertexArray[1] = wNewY;
+                // currentVertexArray[2] = (float) (wNewRadius * Math.sin(Math.toRadians(0)));
+                //
+                // currentVertexArray[3] = (float) (wPreRadius * Math.cos(Math.toRadians(0)));
+                // currentVertexArray[4] = wPreY;
+                // currentVertexArray[5] = (float) (wPreRadius * Math.sin(Math.toRadians(0)));
+                // }
+                //
+                // nextVertexArray[0] = (float) (wNewRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
+                // nextVertexArray[1] = wNewY;
+                // nextVertexArray[2] = (float) (wNewRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
+                //
+                // nextVertexArray[3] = (float) (wPreRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
+                // nextVertexArray[4] = wPreY;
+                // nextVertexArray[5] = (float) (wPreRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
+
+                // // 第一个三角形
+                // for (int i = 0; i < 6; i++) {
+                // vertexArray.add(currentVertexArray[i]);
+                // }
+                // vertexArray.add(nextVertexArray[3]);
+                // vertexArray.add(nextVertexArray[4]);
+                // vertexArray.add(nextVertexArray[5]);
+                //
+                // // 第二个三角形
+                // vertexArray.add(nextVertexArray[3]);
+                // vertexArray.add(nextVertexArray[4]);
+                // vertexArray.add(nextVertexArray[5]);
+                //
+                // vertexArray.add(nextVertexArray[0]);
+                // vertexArray.add(nextVertexArray[1]);
+                // vertexArray.add(nextVertexArray[2]);
+                //
+                // vertexArray.add(currentVertexArray[0]);
+                // vertexArray.add(currentVertexArray[1]);
+                // vertexArray.add(currentVertexArray[2]);
+                /**
+                 * 非常注意一个问题：当我们以x轴当作经度起始的话，我们的每个四边形的current为右边的边上的两个顶点，next为左边的两个顶点
+                 * 所以上面的顶点顺序是错误的，最后绘制出来的是背面，我们应该绘制正面的
+                  */
                 // 每次计算下一个的经度下的两个点的位置
                 if (jAngle == 0) {
-                    currentVertexArray[0] = (float) (wNewRadius * Math.cos(Math.toRadians(jAngle)));
-                    currentVertexArray[1] = wNewY;
-                    currentVertexArray[2] = (float) (wNewRadius * Math.sin(Math.toRadians(jAngle)));
+                    currentVertexArray[0] = (float) (wPreRadius * Math.cos(Math.toRadians(0)));
+                    currentVertexArray[1] = wPreY;
+                    currentVertexArray[2] = (float) (wPreRadius * Math.sin(Math.toRadians(0)));
 
-                    currentVertexArray[3] = (float) (wPreRadius * Math.cos(Math.toRadians(jAngle)));
-                    currentVertexArray[4] = wPreY;
-                    currentVertexArray[5] = (float) (wPreRadius * Math.sin(Math.toRadians(jAngle)));
+                    currentVertexArray[3] = (float) (wNewRadius * Math.cos(Math.toRadians(0)));
+                    currentVertexArray[4] = wNewY;
+                    currentVertexArray[5] = (float) (wNewRadius * Math.sin(Math.toRadians(0)));
                 }
 
-                nextVertexArray[0] = (float) (wNewRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
-                nextVertexArray[1] = wNewY;
-                nextVertexArray[2] = (float) (wNewRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
+                nextVertexArray[0] = (float) (wPreRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
+                nextVertexArray[1] = wPreY;
+                nextVertexArray[2] = (float) (wPreRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
 
-                nextVertexArray[3] = (float) (wPreRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
-                nextVertexArray[4] = wPreY;
-                nextVertexArray[5] = (float) (wPreRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
-
+                nextVertexArray[3] = (float) (wNewRadius * Math.cos(Math.toRadians(jAngle + PER_ANGLE)));
+                nextVertexArray[4] = wNewY;
+                nextVertexArray[5] = (float) (wNewRadius * Math.sin(Math.toRadians(jAngle + PER_ANGLE)));
                 // 第一个三角形
                 for (int i = 0; i < 6; i++) {
                     vertexArray.add(currentVertexArray[i]);
                 }
-                vertexArray.add(nextVertexArray[3]);
-                vertexArray.add(nextVertexArray[4]);
-                vertexArray.add(nextVertexArray[5]);
-
-                // 第二个三角形
-                vertexArray.add(nextVertexArray[3]);
-                vertexArray.add(nextVertexArray[4]);
-                vertexArray.add(nextVertexArray[5]);
-
                 vertexArray.add(nextVertexArray[0]);
                 vertexArray.add(nextVertexArray[1]);
                 vertexArray.add(nextVertexArray[2]);
 
-                vertexArray.add(currentVertexArray[0]);
-                vertexArray.add(currentVertexArray[1]);
-                vertexArray.add(currentVertexArray[2]);
+                // 第二个三角形
+                vertexArray.add(nextVertexArray[0]);
+                vertexArray.add(nextVertexArray[1]);
+                vertexArray.add(nextVertexArray[2]);
+
+                vertexArray.add(currentVertexArray[3]);
+                vertexArray.add(currentVertexArray[4]);
+                vertexArray.add(currentVertexArray[5]);
+
+                vertexArray.add(nextVertexArray[3]);
+                vertexArray.add(nextVertexArray[4]);
+                vertexArray.add(nextVertexArray[5]);
 
                 // 将下一个经度上的两个点加入到当前
-                for (int i = 0; i < 6; i++) {
-                    currentVertexArray[i] = nextVertexArray[i];
-                }
+                wrapTemp = currentVertexArray;
+                currentVertexArray = nextVertexArray;
+                nextVertexArray = wrapTemp;
+                // for (int i = 0; i < 6; i++) {
+                // currentVertexArray[i] = nextVertexArray[i];
+                // }
             }
         }
-        // for (int wAngle = -90; wAngle <= 90; wAngle += PER_ANGLE) {// 纬度
-        // for (int jAngle = 0; jAngle < 360; jAngle += PER_ANGLE) {// 经度
-        // float x0 = (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.cos(Math.toRadians(jAngle)));
-        // float y0 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
-        // float z0 = (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.sin(Math.toRadians(jAngle)));
-        //
-        // float x1 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.cos(Math.toRadians(jAngle
-        // + PER_ANGLE)));
-        // float y1 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle)));
-        // float z1 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle)) * Math.sin(Math.toRadians(jAngle
-        // + PER_ANGLE)));
-        //
-        // float x2 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.cos(Math.toRadians(jAngle
-        // + PER_ANGLE)));
-        // float y2 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle + PER_ANGLE)));
-        // float z2 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.sin(Math.toRadians(jAngle
-        // + PER_ANGLE)));
-        //
-        // float x3 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.cos(Math.toRadians(jAngle)));
-        // float y3 = (float) (this.mRadius * Math.sin(Math.toRadians(wAngle + PER_ANGLE)));
-        // float z3 =
-        // (float) (this.mRadius * Math.cos(Math.toRadians(wAngle + PER_ANGLE)) * Math.sin(Math.toRadians(jAngle)));
-        //
-        // vertexArray.add(x0);
-        // vertexArray.add(y0);
-        // vertexArray.add(z0);
-        //
-        // vertexArray.add(x1);
-        // vertexArray.add(y1);
-        // vertexArray.add(z1);
-        //
-        // vertexArray.add(x3);
-        // vertexArray.add(y3);
-        // vertexArray.add(z3);
-        //
-        // vertexArray.add(x1);
-        // vertexArray.add(y1);
-        // vertexArray.add(z1);
-        //
-        // vertexArray.add(x2);
-        // vertexArray.add(y2);
-        // vertexArray.add(z2);
-        //
-        // vertexArray.add(x3);
-        // vertexArray.add(y3);
-        // vertexArray.add(z3);
-        // }
-        // }
 
         float[] vertexArr = new float[vertexArray.size()];
         for (int i = 0; i < vertexArray.size(); i++) {

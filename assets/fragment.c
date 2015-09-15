@@ -4,7 +4,7 @@
 
  void main(){
      vec4 color;
-     float n = 8.0;//一个坐标分量分的总份数
+     float n = 12.0;//一个坐标分量分的总份数
      float span = 2.0 * uRadius / n;//每一份的长度
      //每一维在立方体内的行列数
      int i = int((vPosition.x + uRadius)/span);
