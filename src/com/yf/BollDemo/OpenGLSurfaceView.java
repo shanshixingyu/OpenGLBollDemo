@@ -59,7 +59,7 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
             GLES20.glClearColor(0, 0, 0, 0);
 
-            mBoll = new Boll(OpenGLSurfaceView.this, 2f);
+            mBoll = new Boll(OpenGLSurfaceView.this, 1f);
 
             GLES20.glEnable(GLES20.GL_DEPTH_TEST);
             GLES20.glEnable(GLES20.GL_CULL_FACE);
@@ -78,12 +78,21 @@ public class OpenGLSurfaceView extends GLSurfaceView {
         @Override
         public void onDrawFrame(GL10 gl10) {
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
-
-            MatrixState.saveCurrentMatrixArray();
             if (mBoll != null) {
+                MatrixState.saveCurrentMatrixArray();
+
+                MatrixState.saveCurrentMatrixArray();
+                MatrixState.translate(-1.5f, 0, 0);
                 mBoll.drawSelf();
+                MatrixState.restoreCurrentMatrixArray();
+
+                MatrixState.saveCurrentMatrixArray();
+                MatrixState.translate(1.5f, 0, 0);
+                mBoll.drawSelf();
+                MatrixState.restoreCurrentMatrixArray();
+
+                MatrixState.restoreCurrentMatrixArray();
             }
-            MatrixState.restoreCurrentMatrixArray();
         }
     }
 
