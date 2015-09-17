@@ -18,6 +18,7 @@ public class Boll {
     private int mVertexCount;
     private FloatBuffer mVertexFloatBuffer;
     private FloatBuffer mNormalFloatBuffer;
+    // private FloatBuffer m
     private int mProgram;
     private int mPositionHandle;
     private int mMVPMatrixHandle;
@@ -25,6 +26,7 @@ public class Boll {
     private int mRadiusHandle;
     private int mNormalHandle;
     private int mLightHandle;
+    private int mCameraHandle;
     private float mRadius;
     private float xAngle;
     private float yAngle;
@@ -189,11 +191,12 @@ public class Boll {
         }
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
-        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMVPMatrix");
-        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMatrix");
+        mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");
+        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMatrix");
         mRadiusHandle = GLES20.glGetUniformLocation(mProgram, "uRadius");
         mNormalHandle = GLES20.glGetAttribLocation(mProgram, "aNormal");
-        mLightHandle = GLES20.glGetUniformLocation(mProgram, "aLightPosition");
+        mLightHandle = GLES20.glGetUniformLocation(mProgram, "uLightPosition");
+        mCameraHandle = GLES20.glGetUniformLocation(mProgram, "uCameraPosition");
     }
 
     public void drawSelf() {
@@ -204,7 +207,8 @@ public class Boll {
         GLES20.glUniform1f(mRadiusHandle, this.mRadius);
         GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mVertexFloatBuffer);
         GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mNormalFloatBuffer);
-        GLES20.glUniform3fv(mLightHandle, 1, MatrixState.getLightPositionFloatBuffer());
+        GLES20.glUniform3fv(mLightHandle, 1, MatrixState.getLightPositionArray(), 0);
+        GLES20.glUniform3fv(mCameraHandle, 1, MatrixState.getCameraPositionArray(), 0);
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glEnableVertexAttribArray(mNormalHandle);

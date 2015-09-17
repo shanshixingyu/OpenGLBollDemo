@@ -3,6 +3,7 @@
  varying vec3 vPosition;
  varying vec4 vAmbient;
  varying vec4 vDiffuse;
+ varying vec4 vSpecular;
 
  void main(){
      vec4 color;
@@ -21,5 +22,5 @@
      }
 
      //将计算出的颜色给此片元
-     gl_FragColor=color*vAmbient+color*vDiffuse;
+     gl_FragColor = color*vAmbient + color*vDiffuse + color*vSpecular;
  }
