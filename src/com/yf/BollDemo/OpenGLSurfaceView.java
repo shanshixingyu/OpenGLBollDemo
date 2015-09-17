@@ -6,7 +6,6 @@ import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -80,8 +79,6 @@ public class OpenGLSurfaceView extends GLSurfaceView {
             GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
             if (mBoll != null) {
                 MatrixState.saveCurrentMatrixArray();
-
-                MatrixState.saveCurrentMatrixArray();
                 MatrixState.translate(-2.0f, 0, 0);
                 mBoll.drawSelf();
                 MatrixState.restoreCurrentMatrixArray();
@@ -89,8 +86,6 @@ public class OpenGLSurfaceView extends GLSurfaceView {
                 MatrixState.saveCurrentMatrixArray();
                 MatrixState.translate(2.0f, 0, 0);
                 mBoll.drawSelf();
-                MatrixState.restoreCurrentMatrixArray();
-
                 MatrixState.restoreCurrentMatrixArray();
             }
         }
