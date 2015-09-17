@@ -2,6 +2,10 @@ package com.yf.BollDemo;
 
 import android.opengl.Matrix;
 
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+
 /**
  * Created by Administrator on 9/5 0005.
  */
@@ -14,6 +18,9 @@ public class MatrixState {
     private static float[] mCurrentMatrixArray = new float[16];
     private static float[] mCameraMatrixArray = new float[16];
     private static float[] mProjectMatrixArray = new float[16];
+    private static FloatBuffer mLightFloatBuffer;
+    private static float[] mLightPosition = new float[3];
+
 
     public static void initMatrixArray() {
         // Matrix.setIdentityM();
@@ -69,6 +76,31 @@ public class MatrixState {
         Matrix.multiplyMM(tempFinalMatrixArray, 0, mCameraMatrixArray, 0, mCurrentMatrixArray, 0);
         Matrix.multiplyMM(tempFinalMatrixArray, 0, mProjectMatrixArray, 0, tempFinalMatrixArray, 0);
         return tempFinalMatrixArray;
+    }
+
+    public static float[] getCurrentMatrixArray() {
+        return mCurrentMatrixArray;
+    }
+
+
+    public static void setLightPosition(float x, float y, float z) {
+        mLightPosition[0] = x;
+        mLightPosition[1] = y;
+        mLightPosition[2] = z;
+
+        if (mLightFloatBuffer != null) {
+            mLightFloatBuffer.clear();
+        }
+
+        ByteBuffer lightByteBuffer = ByteBuffer.allocateDirect(3 * 4);
+        lightByteBuffer.order(ByteOrder.nativeOrder());
+        mLightFloatBuffer = lightByteBuffer.asFloatBuffer();
+        mLightFloatBuffer.put(mLightPosition);
+        mLightFloatBuffer.position(0);
+    }
+
+    public static FloatBuffer getLightPositionFloatBuffer(){
+        return mLightFloatBuffer;
     }
 
 }

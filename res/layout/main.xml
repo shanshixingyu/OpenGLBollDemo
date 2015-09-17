@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-        >
-    <TextView
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Hello World, MainActivity"
-            />
+    android:orientation="vertical"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <SeekBar
+        android:id="@+id/light_position_seekbar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:progress="0"
+        android:max="100" />
+
+    <com.yf.BollDemo.OpenGLSurfaceView
+        android:id="@+id/open_gl_surface_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </LinearLayout>
 

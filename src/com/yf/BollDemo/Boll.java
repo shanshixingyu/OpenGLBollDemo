@@ -18,18 +18,16 @@ public class Boll {
     private int mVertexCount;
     private FloatBuffer mVertexFloatBuffer;
     private FloatBuffer mNormalFloatBuffer;
-    private FloatBuffer mLightFloatBuffer;
     private int mProgram;
     private int mPositionHandle;
     private int mMVPMatrixHandle;
+    private int mMatrixHandle;
     private int mRadiusHandle;
     private int mNormalHandle;
     private int mLightHandle;
     private float mRadius;
     private float xAngle;
     private float yAngle;
-
-    private float[] mLightPosition = new float[3];
 
     public Boll(OpenGLSurfaceView openGLSurfaceView, float radius) {
         if (radius <= 0) {
@@ -163,15 +161,14 @@ public class Boll {
         mVertexFloatBuffer.put(vertexArr);
         mVertexFloatBuffer.position(0);
 
-
-        //因为球的每个顶点在该顶点的的法向量上，所以可以用顶点坐标表示其法向量
+        // 因为球的每个顶点在该顶点的的法向量上，所以可以用顶点坐标表示其法向量
         ByteBuffer normalByteBuffer = ByteBuffer.allocateDirect(vertexArray.size() * 4);
         normalByteBuffer.order(ByteOrder.nativeOrder());
         mNormalFloatBuffer = normalByteBuffer.asFloatBuffer();
         mNormalFloatBuffer.put(vertexArr);
         mNormalFloatBuffer.position(0);
 
-        setLightPosition(0, 0, 0);
+        MatrixState.setLightPosition(0, 0, 0);
     }
 
     private void initShader(OpenGLSurfaceView openGLSurfaceView) {
@@ -181,7 +178,7 @@ public class Boll {
         }
 
         String fragmentShaderSource =
-                ShaderUtil.readSourceFromAssetsFile("fragment.c", openGLSurfaceView.getResources());
+            ShaderUtil.readSourceFromAssetsFile("fragment.c", openGLSurfaceView.getResources());
         if (fragmentShaderSource == null) {
             throw new NullPointerException("读取片元着色器源码失败");
         }
@@ -193,6 +190,7 @@ public class Boll {
 
         mPositionHandle = GLES20.glGetAttribLocation(mProgram, "aPosition");
         mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMVPMatrix");
+        mMatrixHandle = GLES20.glGetUniformLocation(mProgram, "mMatrix");
         mRadiusHandle = GLES20.glGetUniformLocation(mProgram, "uRadius");
         mNormalHandle = GLES20.glGetAttribLocation(mProgram, "aNormal");
         mLightHandle = GLES20.glGetUniformLocation(mProgram, "aLightPosition");
@@ -202,10 +200,11 @@ public class Boll {
         GLES20.glUseProgram(mProgram);
 
         GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, MatrixState.getFinalMatrixArray(), 0);
+        GLES20.glUniformMatrix4fv(mMatrixHandle, 1, false, MatrixState.getCurrentMatrixArray(), 0);
         GLES20.glUniform1f(mRadiusHandle, this.mRadius);
         GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mVertexFloatBuffer);
         GLES20.glVertexAttribPointer(mNormalHandle, 3, GLES20.GL_FLOAT, false, 3 * 4, mNormalFloatBuffer);
-        GLES20.glUniform3fv(mLightHandle, 3, mLightFloatBuffer);
+        GLES20.glUniform3fv(mLightHandle, 1, MatrixState.getLightPositionFloatBuffer());
 
         GLES20.glEnableVertexAttribArray(mPositionHandle);
         GLES20.glEnableVertexAttribArray(mNormalHandle);
@@ -227,22 +226,6 @@ public class Boll {
 
     public void setyAngle(float yAngle) {
         this.yAngle = yAngle;
-    }
-
-    public void setLightPosition(float x, float y, float z) {
-        mLightPosition[0] = x;
-        mLightPosition[1] = y;
-        mLightPosition[2] = z;
-
-        if (mLightFloatBuffer != null) {
-            mLightFloatBuffer.clear();
-        }
-
-        ByteBuffer lightByteBuffer = ByteBuffer.allocateDirect(3 * 4);
-        lightByteBuffer.order(ByteOrder.nativeOrder());
-        mLightFloatBuffer = lightByteBuffer.asFloatBuffer();
-        mLightFloatBuffer.put(mLightPosition);
-        mLightFloatBuffer.position(0);
     }
 
 }

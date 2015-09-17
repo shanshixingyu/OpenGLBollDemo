@@ -2,6 +2,7 @@
  uniform float uRadius;
  varying vec3 vPosition;
  varying vec4 vAmbient;
+ varying vec4 vDiffuse;
 
  void main(){
      vec4 color;
@@ -20,5 +21,5 @@
      }
 
      //将计算出的颜色给此片元
-     gl_FragColor=color*vAmbient;
+     gl_FragColor=color*vAmbient+color*vDiffuse;
  }
